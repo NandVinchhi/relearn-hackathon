@@ -1,14 +1,29 @@
 import SwiftUI
 import Charts
 
-struct LikeData: Identifiable {
-    let id = UUID()
-    let date: Date
-    let likes: Double
-    
-    init(date: Date, likes: Double) {
-        self.date = date
-        self.likes = likes
+extension View {
+    func fadeOutTop(fadeLength:CGFloat=50) -> some View {
+        return mask(
+            VStack(spacing: 0) {
+
+                // Top gradient
+                LinearGradient(gradient:
+                   Gradient(
+                       colors: [Color.black.opacity(0), Color.black]),
+                       startPoint: .top, endPoint: .bottom
+                   )
+                   .frame(height: fadeLength)
+                
+                Rectangle().fill(Color.black)
+                
+                LinearGradient(gradient:
+                   Gradient(
+                       colors: [Color.black, Color.black.opacity(0)]),
+                       startPoint: .top, endPoint: .bottom
+                   )
+                   .frame(height: fadeLength)
+            }
+        )
     }
 }
 
@@ -63,11 +78,6 @@ struct ProgressGraphView: View {
     }
 }
 
-struct UnitType: Hashable {
-    var text: String
-    var number: Int
-}
-
 struct TopicView: View {
     var topicName: String
     var unitList: [UnitType]
@@ -101,13 +111,13 @@ struct TopicView: View {
                         ZStack (alignment: .leading) {
                             RoundedRectangle(cornerRadius: 17)
                                 .stroke(Color.dark, lineWidth: 2)
-                                .zIndex(1)
+                                .zIndex(2)
                             
                             let val = 3.4 * Double(unit.number)
                             RoundedRectangle(cornerRadius: 17)
                                 .foregroundColor(unit.number == 100 ? Color.hundred : Color.light)
                                 .frame(width: val, alignment: .leading)
-                                .zIndex(2)
+                                .zIndex(1)
                         }.frame(width: 340, height: 15)
                     }.padding(.bottom, 12)
                 }
@@ -167,6 +177,7 @@ struct ProgressPage: View {
                 VStack {
                     
                     ProgressGraphView()
+                        .padding(.top, 12)
                     
                     TopicView(topicName: "AP Human Geography",
                               unitList: [
@@ -186,9 +197,15 @@ struct ProgressPage: View {
                     TopicView(topicName: "AP US History",
                               unitList: [
                                 UnitType(text: "Independence", number: 70)])
+                    
+                    RoundedRectangle(cornerRadius: 72)
+                        .frame(width: 70, height: 6)
+                        .foregroundColor(Color.lightGray)
+                        .padding(.top, 12)
+                    
                 }.padding(.trailing, 5)
-                .padding(.bottom, 5)
-            }
+                .padding(.bottom, 24)
+            }.fadeOutTop(fadeLength: 30)
             Spacer()
         }
     }

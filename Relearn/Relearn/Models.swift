@@ -16,3 +16,19 @@ struct Reel: Equatable {
         return lhs.id == rhs.id
     }
 }
+
+struct LikeData: Identifiable {
+    let id = UUID()
+    let date: Date
+    let likes: Double
+    
+    init(date: Date, likes: Double) {
+        self.date = date
+        self.likes = likes
+    }
+}
+
+struct UnitType: Hashable {
+    var text: String
+    var number: Int
+}
