@@ -26,16 +26,20 @@ struct ProgressGraphView: View {
     
     var body: some View {
         ZStack {
-            VStack {
+            VStack (alignment: .leading) {
                 Text("YOUR LAST WEEK")
-                    .fontWeight(.semibold)
-                    .font(.system(size: 18))
+                    .fontWeight(.bold)
+                    .font(.system(size: 20))
+                
                 Chart {
                     ForEach(likesData) {item in
                         LineMark(
                             x: .value("Date", item.date),
                             y: .value("Likes", item.likes)
                         ).interpolationMethod(.catmullRom)
+                            .foregroundStyle(Color.light)
+                            .lineStyle(.init(lineWidth: 4))
+                            
                     }
                 }
             }.frame(width: 340, height: 180)
@@ -99,12 +103,12 @@ struct TopicView: View {
                                 .stroke(Color.dark, lineWidth: 2)
                                 .zIndex(1)
                             
-                            let val = 3.3 * Double(unit.number)
+                            let val = 3.4 * Double(unit.number)
                             RoundedRectangle(cornerRadius: 17)
                                 .foregroundColor(unit.number == 100 ? Color.hundred : Color.light)
                                 .frame(width: val, alignment: .leading)
                                 .zIndex(2)
-                        }.frame(width: 330, height: 15)
+                        }.frame(width: 340, height: 15)
                     }.padding(.bottom, 12)
                 }
                 Spacer()
