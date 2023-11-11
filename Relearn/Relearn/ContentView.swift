@@ -7,6 +7,8 @@ struct ContentView: View {
     var body: some View {
         VStack {
             switch vm.authState {
+            case .loading:
+                LoadingView()
             case .loggedOut:
                 LoginPage()
             case .onboarding:

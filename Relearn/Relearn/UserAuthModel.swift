@@ -5,7 +5,7 @@ class UserAuthModel: ObservableObject {
     
     @Published var givenName: String = ""
     @Published var profilePicUrl: String = ""
-    @Published var authState: AuthState = .loggedOut
+    @Published var authState: AuthState = .loading
     @Published var errorMessage: String = ""
     
     

@@ -2,7 +2,7 @@ import Foundation
 import AVKit
 
 enum AuthState {
-    case loggedOut, onboarding, loggedIn
+    case loading, loggedOut, onboarding, loggedIn
 }
 
 struct Reel: Equatable {
