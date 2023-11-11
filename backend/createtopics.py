@@ -1,3 +1,8 @@
+from supabase import create_client, Client
+from credentials import SUPABASE_URL, SUPABASE_KEY
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
 units = [
     {
         "unit_id": 1,
@@ -68,8 +73,16 @@ units = [
     {
         "unit_id": 12,
         "topic_id": 6,
-        "unit_name": "Basic Economic Concepts",
+        "unit_name": "Basic economics concepts",
         "unit_number": 1
     }
 ]
+
+for u in units:
+    data, count = supabase.table('units').insert({
+        "id": u["unit_id"],
+        "topic_id": u["topic_id"],
+        "name": u["unit_name"],
+        "number": u["unit_number"]
+    }).execute()
 
