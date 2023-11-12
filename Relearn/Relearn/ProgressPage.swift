@@ -183,6 +183,10 @@ struct ProgressPage: View {
                     ProgressGraphView()
                         .padding(.top, 12)
                     
+//                    ForEach(likesData, id: \.self) { data in
+//                        TopicView(topicName: data.topic,
+//                                  unitList: data.unitList)
+//                    }
                     TopicView(topicName: "AP BIOLOGY",
                               unitList: [
                                 UnitType(text: "Chemistry of Life",number: 14),

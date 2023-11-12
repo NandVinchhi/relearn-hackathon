@@ -94,7 +94,7 @@ def choose_two_elements(lst):
     if len(lst) < 2:
         return lst
     else:
-        return sample(lst, 3)
+        return sample(lst, 2)
     
 def recommend_initial(email, selection_list):
     final = []
@@ -123,7 +123,7 @@ def recommend_initial(email, selection_list):
 
 def get_n_meme_reels(n):
     response = supabase.table("meme_reels").select("*").execute()
-    return sample(response.data, 3)
+    return sample(response.data, n)
 
 
 def offboard():
@@ -215,9 +215,9 @@ def remove_like(reel_id, email):
 
     r.delete(key)
 
-
-
-# r.flushall()
 # onboard("nand.vinchhi@gmail.com", [1])
 print(recommend_initial("nand.vinchhi@gmail.com", [1]))
+# r.flushall()
 # offboard()
+
+# print(r.json().get("current:nand.vinchhi@gmail.com:1"))

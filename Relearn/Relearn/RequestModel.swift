@@ -56,13 +56,20 @@ class RequestModel: ObservableObject {
                 return
             }
             
+            
+            
             do {
-                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-                   let message = json["message"] as? [[String: Any]?] {
-                    DispatchQueue.main.async {
-                        completion(self.convertDictArrayToReel(data: message), nil)
+                
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                    print("hello world \(json) \(self.selectedTopics)")
+                    if let message = json["message"] as? [[String: Any]?] {
+                        DispatchQueue.main.async {
+                            print("HELLO WORLD \(message)")
+                            completion(self.convertDictArrayToReel(data: message), nil)
+                        }
                     }
                 } else {
+                    
                     DispatchQueue.main.async {
                         completion(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"]))
                     }
