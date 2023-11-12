@@ -22,27 +22,27 @@ async def api_is_onboarded(body: dict):
         raise HTTPException(status_code=500, detail="Server error")
 
 @app.post("/onboard")
-async def api_onboard(email: str, topic_selection: List[str]):
+async def api_onboard(body: dict):
     try:
-        dbfunctions.onboard(email, topic_selection)
+        dbfunctions.onboard(body["email"], body["topic_selection"])
         return {"message": "success"}
     except Exception as e:
         print(repr(e))
         raise HTTPException(status_code=500, detail="Server error")
     
 @app.post("/recommend_reel")
-async def api_recommend_reel(email: str, selection_list: List[int]):
+async def api_recommend_reel(body: dict):
     try:
-        recommended_reel = dbfunctions.recommend_reel(email, selection_list)
+        recommended_reel = dbfunctions.recommend_reel(body["email"], body["selection_list"])
         return {"message": recommended_reel}
     except Exception as e:
         print(repr(e))
         raise HTTPException(status_code=500, detail="Server error")
     
 @app.post("/recommend_initial")
-async def api_recommend_initial(email: str, selection_list: List[str]):
+async def api_recommend_initial(body: dict):
     try:
-        initial_recommendations = dbfunctions.recommend_initial(email, selection_list)
+        initial_recommendations = dbfunctions.recommend_initial(body["email"], body["selection_list"])
         return {"message": initial_recommendations or "success"}
     except Exception as e:
         print(repr(e))
@@ -58,45 +58,45 @@ async def api_get_meme_reel():
         raise HTTPException(status_code=500, detail="Server error")
     
 @app.post("/get_comments")
-async def api_get_comments(reel_id: int):
+async def api_get_comments(body: dict):
     try:
-        comments = dbfunctions.get_comments(reel_id)
+        comments = dbfunctions.get_comments(body["reel_id"])
         return {"message": comments or "success"}
     except Exception as e:
         print(repr(e))
         raise HTTPException(status_code=500, detail="Server error")
 
 @app.post("/add_comment")
-async def api_add_comment(reel_id: int, email: str, name: str, profile_url: str, created_at: str, comment: str):
+async def api_add_comment(body: dict):
     try:
-        added_comment = dbfunctions.add_comment(reel_id, email, name, profile_url, created_at, comment)
+        added_comment = dbfunctions.add_comment(body["reel_id"], body["email"], body["name"], body["profile_url"], body["created_at"], body["comment"])
         return {"message": added_comment}
     except Exception as e:
         print(repr(e))
         raise HTTPException(status_code=500, detail="Server error")
     
 @app.post("/add_comment_with_edison")
-async def api_add_comment_with_edison(reel_id: int, email: str, name: str, profile_url: str, created_at: str, comment: str):
+async def api_add_comment_with_edison(body: dict):
     try:
-        added_comment = dbfunctions.add_comment_with_edison(reel_id, email, name, profile_url, created_at, comment)
+        added_comment = dbfunctions.add_comment_with_edison(body["reel_id"], body["email"], body["name"], body["profile_url"], body["created_at"], body["comment"])
         return {"message": added_comment}
     except Exception as e:
         print(repr(e))
         raise HTTPException(status_code=500, detail="Server error")
 
 @app.post("/is_liked")
-async def api_is_liked(reel_id: int, email: str):
+async def api_is_liked(body: dict):
     try:
-        liked_status = dbfunctions.is_liked(reel_id, email)
+        liked_status = dbfunctions.is_liked(body["reel_id"], body["email"])
         return {"liked": liked_status}
     except Exception as e:
         print(repr(e))
         raise HTTPException(status_code=500, detail="Server error")
     
 @app.post("/like_reel")
-async def api_like_reel(reel_id: int, email: str):
+async def api_like_reel(body: dict):
     try:
-        dbfunctions.like_reel(reel_id, email)
+        dbfunctions.like_reel(body["reel_id"], body["email"])
         return {"message": "success"}
     except Exception as e:
         print(repr(e))
