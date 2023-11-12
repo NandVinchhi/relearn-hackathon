@@ -15,8 +15,8 @@ class UserAuthModel: ObservableObject {
     let baseUrl: String = "http://ec2-3-88-232-170.compute-1.amazonaws.com"
     
     private func convertDictToReel(data: [String: Any]) -> Reel {
-        return Reel(
-            player: AVPlayer(url:  URL(string: data["link"] as? String ?? "https://relearn.app")!), id: data["id"] as? Int ?? 0, shareLink: URL(string: data["link"] as? String ?? "https://relearn.app")!, topic: data["topic"] as? String ?? "", unit: data["unit"] as? String ?? ""
+        return Reel(id: UUID(),
+            player: AVPlayer(url:  URL(string: data["link"] as? String ?? "https://relearn.app")!), reelId: data["id"] as? Int ?? 0, shareLink: URL(string: data["link"] as? String ?? "https://relearn.app")!, topic: data["topic"] as? String ?? "", unit: data["unit"] as? String ?? ""
         )
     }
     
@@ -77,45 +77,21 @@ class UserAuthModel: ObservableObject {
         task.resume()
     }
     
-    
-    
-    private func getReel() -> AVPlayerItem {
-        let randomInt = Int.random(in: 1...5)
-        
-        let newURL = URL(string: "https://github.com/NandVinchhi/samplevideos/raw/main/reel\(randomInt).mp4")!
-        let newPlayerItem = AVPlayerItem(url: newURL)
-        
-        return newPlayerItem
+    private func getReel() -> Reel {
+        return Reel(id: UUID(),
+            player: AVPlayer(url: URL(string: "https://github.com/NandVinchhi/samplevideos/raw/main/reel1.mp4")!), reelId: -1, shareLink: URL(string: "https://github.com/NandVinchhi/samplevideos/raw/main/reel1.mp4")!, topic: "", unit: ""
+        )
     }
     
-    public func scrollForward(reelIndex: Int) {
-        let newPlayerItem: AVPlayerItem = getReel()
+    public func scrollForward() {
+        let newItem: Reel = getReel()
+        reels.append(newItem)
         
-        switch (reelIndex) {
-        case 0:
-            reels[2].player.replaceCurrentItem(with: newPlayerItem)
-        case 1:
-            reels[0].player.replaceCurrentItem(with: newPlayerItem)
-        case 2:
-            reels[1].player.replaceCurrentItem(with: newPlayerItem)
-        default:
-            break
-        }
     }
     
-    public func scrollBack(reelIndex: Int) {
-        let newPlayerItem: AVPlayerItem = getReel()
-        
-        switch (reelIndex) {
-        case 0:
-            reels[1].player.replaceCurrentItem(with: newPlayerItem)
-        case 1:
-            reels[2].player.replaceCurrentItem(with: newPlayerItem)
-        case 2:
-            reels[0].player.replaceCurrentItem(with: newPlayerItem)
-        default:
-            break
-        }
+    public func scrollBack() {
+        let newItem: Reel = getReel()
+        reels.insert(newItem, at: 0)
     }
     
     private func isOnboardedRequest(email: String, completion: @escaping ([Int]?, Error?) -> Void) {
@@ -239,7 +215,7 @@ class UserAuthModel: ObservableObject {
                 }
             }
            
-        }else{
+        } else{
             self.authState = .loggedOut
             self.givenName = "Not Logged In"
             self.profilePicUrl =  ""

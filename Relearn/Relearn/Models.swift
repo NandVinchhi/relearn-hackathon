@@ -5,9 +5,10 @@ enum AuthState {
     case loading, loggedOut, onboarding, loggedIn
 }
 
-struct Reel: Equatable {
+struct Reel: Equatable, Hashable, Identifiable {
+    let id: UUID
     var player: AVPlayer
-    var id: Int
+    var reelId: Int
     var shareLink: URL
     var topic: String
     var unit: String

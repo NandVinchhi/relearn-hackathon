@@ -73,15 +73,19 @@ def recommend_reel(email, selection_list):
     
     try:
         unit = supabase.table("units").select("*").filter("topic_id", "eq", k["topic"]).filter("number", "eq", k["data"]["unit"]).limit(1).single().execute().data
+        topic = supabase.table("topics").select("*").filter("id", "eq", unit["topic_id"]).limit(1).single().execute().data
         reel = supabase.table("reels").select("*").filter("unit_id", "eq", unit["id"]).filter("number", "eq", k["data"]["reel"]).limit(1).single().execute().data
+        reel["unit"] = unit["name"]
+        reel["topic"] = topic["name"]
+        
         return reel
     except:
         pass
     
     return get_meme_reel()
 
-def choose_three_elements(lst):
-    if len(lst) < 3:
+def choose_two_elements(lst):
+    if len(lst) < 2:
         return lst
     else:
         return sample(lst, 3)
@@ -94,12 +98,16 @@ def recommend_initial(email, selection_list):
         data = json.loads(r.json().get(f"current:{email}:{i}"))
         if data["unit"] != "finished":
             data_list.append({"data": data, "topic": i})
-    kk = choose_three_elements(data_list)
+    kk = choose_two_elements(data_list)
     
     for k in kk:
         try:
             unit = supabase.table("units").select("*").filter("topic_id", "eq", k["topic"]).filter("number", "eq", k["data"]["unit"]).limit(1).single().execute().data
+            topic = supabase.table("topics").select("*").filter("id", "eq", unit["topic_id"]).limit(1).single().execute().data
             reel = supabase.table("reels").select("*").filter("unit_id", "eq", unit["id"]).filter("number", "eq", k["data"]["reel"]).limit(1).single().execute().data
+
+            reel["unit"] = unit["name"]
+            reel["topic"] = topic["name"]
             final.append(reel)
         except:
             pass
