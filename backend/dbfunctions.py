@@ -62,6 +62,10 @@ def increment_current(reel_id, email):
         data = {"unit": "finished", "reel": "finished"}
         r.json().set(key, Path.root_path(), json.dumps(data))
 
+def get_meme_reel():
+    response = supabase.table("meme_reels").select("*").execute()
+    return choice(response.data)
+
 def recommend_reel(email, selection_list):
     data_list = []
 
@@ -69,6 +73,8 @@ def recommend_reel(email, selection_list):
         data = json.loads(r.json().get(f"current:{email}:{i}"))
         if data["unit"] != "finished":
             data_list.append({"data": data, "topic": i})
+
+    print(data_list)
     k = choice(data_list)
     
     try:
@@ -77,7 +83,7 @@ def recommend_reel(email, selection_list):
         reel = supabase.table("reels").select("*").filter("unit_id", "eq", unit["id"]).filter("number", "eq", k["data"]["reel"]).limit(1).single().execute().data
         reel["unit"] = unit["name"]
         reel["topic"] = topic["name"]
-        
+
         return reel
     except:
         pass
@@ -119,9 +125,6 @@ def get_n_meme_reels(n):
     response = supabase.table("meme_reels").select("*").execute()
     return sample(response.data, 3)
 
-def get_meme_reel():
-    response = supabase.table("meme_reels").select("*").execute()
-    return choice(response.data)
 
 def offboard():
     supabase.table("topic_selection").delete().neq("email", 1).execute()

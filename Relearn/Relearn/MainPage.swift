@@ -14,7 +14,7 @@ struct ShareSheet: UIViewControllerRepresentable {
 }
 
 struct ReelView: View {
-
+    var currentTab: UUID
     var currentReel: Reel
     @State var isPlaying: Bool = false
     
@@ -31,22 +31,22 @@ struct ReelView: View {
        
         VideoPlayer(player: currentReel.player)
             .disabled(true)
-//            .onChange(of: currentTab) {
-//               Task {
-//                   if (index == currentTab) {
-//                       currentReel.player.play()
-//                       isLiked = false
-//                       showingShareSheet = false
-//                       showingComments = false
-//                       isPlaying = true
-//                       
-//                   }
+            .onChange(of: currentTab) { oldValue, newValue in
+               Task {
+                   if (currentReel.id == newValue) {
+                       currentReel.player.play()
+                       isLiked = false
+                       showingShareSheet = false
+                       showingComments = false
+                       isPlaying = true
+                       
+                   }
 //                   NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: nil, queue: .main) { _ in
 //                       currentReel.player.seek(to: .zero)
 //                       currentReel.player.play()
 //                   }
-//               }
-//           }
+               }
+           }
            .onDisappear {
                Task {
                    currentReel.player.pause()
@@ -151,7 +151,7 @@ struct MainPage: View {
                     GeometryReader { proxy in
                         TabView(selection: $currentTab) {
                             ForEach(vm.reels) { reel in
-                                ReelView(currentReel: reel)
+                                ReelView(currentTab: currentTab, currentReel: reel)
                                     .frame(width: proxy.size.width, height: proxy.size.height)
                                     .rotationEffect(.degrees(-90))
                                     .tag(reel.id)
@@ -163,11 +163,13 @@ struct MainPage: View {
                         .offset(x: proxy.size.width)
                         .tabViewStyle(.page(indexDisplayMode: .never))
                         .onChange(of: currentTab) { oldValue, newValue in
-                            print("HELLO WORLD \(newValue)")
                             vm.scrollForward()
                         }
                     }
                     
+                }
+                .onAppear {
+                    vm.reels.first(where: { $0.id == currentTab})?.player.play()
                 }
                 .ignoresSafeArea()
             }

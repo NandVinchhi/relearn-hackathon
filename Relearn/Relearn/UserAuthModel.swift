@@ -77,21 +77,59 @@ class UserAuthModel: ObservableObject {
         task.resume()
     }
     
-    private func getReel() -> Reel {
-        return Reel(id: UUID(),
-            player: AVPlayer(url: URL(string: "https://github.com/NandVinchhi/samplevideos/raw/main/reel1.mp4")!), reelId: -1, shareLink: URL(string: "https://github.com/NandVinchhi/samplevideos/raw/main/reel1.mp4")!, topic: "", unit: ""
-        )
+    private func getReelRequest(completion: @escaping (Reel?, Error?) -> Void) {
+        let url = URL(string: baseUrl + "/recommend_reel")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = ["email": email, "selection_list": selectedTopics]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
+                return
+            }
+            
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                   let message = json["message"] as? [String: Any] {
+                    DispatchQueue.main.async {
+                        completion(self.convertDictToReel(data: message), nil)
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        completion(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"]))
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
+            }
+        }
+
+        task.resume()
     }
     
     public func scrollForward() {
-        let newItem: Reel = getReel()
-        reels.append(newItem)
+        getReelRequest() { reel, error in
+            if let reel {
+                self.reels.append(reel)
+            }
+        }
         
     }
     
     public func scrollBack() {
-        let newItem: Reel = getReel()
-        reels.insert(newItem, at: 0)
+        getReelRequest() { reel, error in
+            if let reel {
+                self.reels.insert(reel, at: 0)
+            }
+        }
     }
     
     private func isOnboardedRequest(email: String, completion: @escaping ([Int]?, Error?) -> Void) {
