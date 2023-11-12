@@ -28,20 +28,10 @@ extension View {
 }
 
 struct ProgressGraphView: View {
-    let likesData: [LikeData] = [
-        LikeData(date: Date(), likes: 10),
-        LikeData(date: Date().addingTimeInterval(86400), likes: 20),
-        LikeData(date: Date().addingTimeInterval(2 * 86400), likes: 35),
-        LikeData(date: Date().addingTimeInterval(3 * 86400), likes: 20),
-        LikeData(date: Date().addingTimeInterval(4 * 86400), likes: 25),
-        LikeData(date: Date().addingTimeInterval(5 * 86400), likes: 80),
-        LikeData(date: Date().addingTimeInterval(6 * 86400), likes: 30),
-        LikeData(date: Date().addingTimeInterval(7 * 86400), likes: 45),
-    ]
-//    @EnvironmentObject var vm: RequestModel
-//    @State var likesData {
-//        return vm.getLikesData()
-//    }
+    @EnvironmentObject var vm: RequestModel
+    @State var likesData {
+        return vm.getLikesData()
+    }
     
     var body: some View {
         ZStack {
@@ -183,24 +173,11 @@ struct ProgressPage: View {
                     ProgressGraphView()
                         .padding(.top, 12)
                     
-//                    ForEach(likesData, id: \.self) { data in
-//                        TopicView(topicName: data.topic,
-//                                  unitList: data.unitList)
-//                    }
-                    TopicView(topicName: "AP BIOLOGY",
-                              unitList: [
-                                UnitType(text: "Chemistry of Life",number: 14),
-                                UnitType(text: "Cell Structure and Function", number: 0)])
-                    
-                    TopicView(topicName: "AP Chemistry",
-                              unitList: [
-                                UnitType(text: "Atomic Structure and Properties", number: 12),
-                                UnitType(text: "Molecular and Ionic Compounds", number: 0)])
-                    
-                    TopicView(topicName: "AP US History",
-                              unitList: [
-                                UnitType(text: "Period 1", number: 4),
-                                UnitType(text: "Period 2", number: 0)])
+                    ForEach(likesData, id: \.self) { data in
+                        TopicView(topicName: data.topic,
+                                  unitList: data.unitList)
+                    }
+                   
                     
                     RoundedRectangle(cornerRadius: 72)
                         .frame(width: 70, height: 6)
