@@ -13,58 +13,6 @@ struct ShareSheet: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
-
-class ReelManager: ObservableObject {
-    @Published var reels: [Reel] = []
-    
-    init() {
-        self.reels = [
-            Reel(player: AVPlayer(url:  URL(string: "https://github.com/NandVinchhi/samplevideos/raw/main/reel1.mp4")!), id: 0, shareLink: URL(string: "https://github.com/NandVinchhi/samplevideos/raw/main/reel1.mp4")!, topic: "AP Human Geography", unit: "Unit 1: Thinking Geographically"),
-            Reel(player: AVPlayer(url:  URL(string: "https://github.com/NandVinchhi/samplevideos/raw/main/reel2.mp4")!), id: 1, shareLink: URL(string: "https://github.com/NandVinchhi/samplevideos/raw/main/reel2.mp4")!, topic: "AP Human Geography", unit: "Unit 1: Thinking Geographically"),
-            Reel(player: AVPlayer(url:  URL(string: "https://github.com/NandVinchhi/samplevideos/raw/main/reel3.mp4")!), id: 2, shareLink: URL(string: "https://github.com/NandVinchhi/samplevideos/raw/main/reel3.mp4")!, topic: "AP Human Geography", unit: "Unit 1: Thinking Geographically")
-        ]
-    }
-    
-    private func getReel() -> AVPlayerItem {
-        let randomInt = Int.random(in: 1...5)
-        
-        let newURL = URL(string: "https://github.com/NandVinchhi/samplevideos/raw/main/reel\(randomInt).mp4")!
-        let newPlayerItem = AVPlayerItem(url: newURL)
-        
-        return newPlayerItem
-    }
-    
-    public func scrollForward(reelIndex: Int) {
-        let newPlayerItem: AVPlayerItem = getReel()
-        
-        switch (reelIndex) {
-        case 0:
-            reels[2].player.replaceCurrentItem(with: newPlayerItem)
-        case 1:
-            reels[0].player.replaceCurrentItem(with: newPlayerItem)
-        case 2:
-            reels[1].player.replaceCurrentItem(with: newPlayerItem)
-        default:
-            break
-        }
-    }
-    
-    public func scrollBack(reelIndex: Int) {
-        let newPlayerItem: AVPlayerItem = getReel()
-        
-        switch (reelIndex) {
-        case 0:
-            reels[1].player.replaceCurrentItem(with: newPlayerItem)
-        case 1:
-            reels[2].player.replaceCurrentItem(with: newPlayerItem)
-        case 2:
-            reels[0].player.replaceCurrentItem(with: newPlayerItem)
-        default:
-            break
-        }
-    }
-}
-
 struct ReelView: View {
     var currentReel: Reel
     @State var isPlaying: Bool = false
@@ -249,24 +197,26 @@ struct InfinitePageView<C, T>: View where C: View, T: Hashable {
 }
 
 struct MainPage: View {
-    @ObservedObject var reelManager: ReelManager = ReelManager()
+    @EnvironmentObject var vm: UserAuthModel
 
     @State private var reelIndex: Int = 0
 
     var body: some View {
-        if (reelManager.reels.count > 0) {
+        Group {
+            if vm.reels.count > 0 {
 
-            InfinitePageView(
-                selection: $reelIndex,
-                before: { correctedIndex(for: $0 - 1) },
-                after: { correctedIndex(for: $0 + 1) },
-                scrollForward: {reelManager.scrollForward(reelIndex: reelIndex)},
-                scrollBack: {reelManager.scrollBack(reelIndex: reelIndex)},
-                view: { index in
-                    ReelView(currentReel: reelManager.reels[index]).zIndex(1)
-                    
-                }
-            )
+                InfinitePageView(
+                    selection: $reelIndex,
+                    before: { correctedIndex(for: $0 - 1) },
+                    after: { correctedIndex(for: $0 + 1) },
+                    scrollForward: {vm.scrollForward(reelIndex: reelIndex)},
+                    scrollBack: {vm.scrollBack(reelIndex: reelIndex)},
+                    view: { index in
+                        ReelView(currentReel: vm.reels[index]).zIndex(1)
+                        
+                    }
+                )
+            }
         }
     }
 

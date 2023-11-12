@@ -2,7 +2,10 @@ import SwiftUI
 
 struct TopicSelect: View {
     var textContent: String
+    var topicId: Int
     @State var isSelected: Bool = false
+    @Binding var selectedTopics: [Int]
+    
     
     var width: CGFloat {
         return (CGFloat) (textContent.count * 10)
@@ -10,7 +13,16 @@ struct TopicSelect: View {
     
     var body: some View {
         Button(action: {
-            isSelected = !isSelected
+            if (isSelected) {
+                isSelected = false
+                selectedTopics.removeAll {
+                    $0 == topicId
+                }
+            } else {
+                isSelected = true
+                selectedTopics.append(topicId)
+            }
+            
         }) {
             Text(textContent)
                 .fontWeight(.bold)
@@ -23,6 +35,9 @@ struct TopicSelect: View {
 }
 
 struct OnboardingPage: View {
+    @State var selectedTopics: [Int] = []
+    @EnvironmentObject var vm: UserAuthModel
+    
     var body: some View {
         Text("What would you like to relearn?")
             .font(/*@START_MENU_TOKEN@*/.title/*@END_MENU_TOKEN@*/)
@@ -33,21 +48,16 @@ struct OnboardingPage: View {
         
         VStack (spacing: 14) {
             HStack(spacing: 10) {
-                TopicSelect(textContent: "AP BIOLOGY")
-                
-                TopicSelect(textContent: "AP MICROECONOMICS")
-                
+                TopicSelect(textContent: "AP BIOLOGY", topicId: 1, selectedTopics: $selectedTopics)
+                TopicSelect(textContent: "AP MICROECONOMICS", topicId: 6, selectedTopics: $selectedTopics)
             }
             HStack(spacing: 10) {
-                TopicSelect(textContent: "AP ENVIRONMENTAL SCIENCE")
-                TopicSelect(textContent: "AP CHEMISTRY")
-                
-                
+                TopicSelect(textContent: "AP ENVIRONMENTAL SCIENCE", topicId: 3, selectedTopics: $selectedTopics)
+                TopicSelect(textContent: "AP CHEMISTRY", topicId: 2, selectedTopics: $selectedTopics)
             }
             HStack(spacing: 10) {
-                TopicSelect(textContent: "AP US HISTORY")
-                TopicSelect(textContent: "AP MACROECONOMICS")
-                
+                TopicSelect(textContent: "AP US HISTORY", topicId: 4, selectedTopics: $selectedTopics)
+                TopicSelect(textContent: "AP MACROECONOMICS", topicId: 5, selectedTopics: $selectedTopics)
             }
         }.padding(.vertical, 40)
         
@@ -55,6 +65,7 @@ struct OnboardingPage: View {
         Button(action: {
             Task {
                 try await Task.sleep(nanoseconds: 200000000)
+                vm.onboard(topicSelection: selectedTopics)
             }
         }) {
             HStack(spacing: 10) {

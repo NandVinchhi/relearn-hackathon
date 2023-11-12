@@ -1,16 +1,124 @@
 import SwiftUI
 import GoogleSignIn
+import AVKit
 
 class UserAuthModel: ObservableObject {
     
     @Published var givenName: String = ""
     @Published var profilePicUrl: String = ""
+    @Published var email: String = ""
+    @Published var selectedTopics: [Int] = []
     @Published var authState: AuthState = .loading
     @Published var errorMessage: String = ""
+    @Published var reels: [Reel] = []
     
-    private let baseUrl: String = "http://ec2-3-88-232-170.compute-1.amazonaws.com"
+    let baseUrl: String = "http://ec2-3-88-232-170.compute-1.amazonaws.com"
     
-    private func isOnboarded(email: String, completion: @escaping ([Int]?, Error?) -> Void) {
+    private func convertDictToReel(data: [String: Any]) -> Reel {
+        return Reel(
+            player: AVPlayer(url:  URL(string: data["link"] as? String ?? "https://relearn.app")!), id: data["id"] as? Int ?? 0, shareLink: URL(string: data["link"] as? String ?? "https://relearn.app")!, topic: data["topic"] as? String ?? "", unit: data["unit"] as? String ?? ""
+        )
+    }
+    
+    private func convertDictArrayToReel(data: [[String: Any]?]) -> [Reel] {
+        var finalReel: [Reel] = []
+        
+        if let data1 = data[0] {
+            finalReel.append(convertDictToReel(data: data1))
+        }
+        
+        if let data2 = data[1] {
+            finalReel.append(convertDictToReel(data: data2))
+        }
+        
+        if let data3 = data[2] {
+            finalReel.append(convertDictToReel(data: data3))
+        }
+        
+        print(finalReel)
+        return finalReel
+    }
+    
+    private func getInitialReels(completion: @escaping ([Reel]?, Error?) -> Void) {
+        let url = URL(string: baseUrl + "/recommend_initial")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = ["email": email, "selection_list": selectedTopics]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
+                return
+            }
+            
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                   let message = json["message"] as? [[String: Any]?] {
+                    DispatchQueue.main.async {
+                        completion(self.convertDictArrayToReel(data: message), nil)
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        completion(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"]))
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
+            }
+        }
+
+        task.resume()
+    }
+    
+    
+    
+    private func getReel() -> AVPlayerItem {
+        let randomInt = Int.random(in: 1...5)
+        
+        let newURL = URL(string: "https://github.com/NandVinchhi/samplevideos/raw/main/reel\(randomInt).mp4")!
+        let newPlayerItem = AVPlayerItem(url: newURL)
+        
+        return newPlayerItem
+    }
+    
+    public func scrollForward(reelIndex: Int) {
+        let newPlayerItem: AVPlayerItem = getReel()
+        
+        switch (reelIndex) {
+        case 0:
+            reels[2].player.replaceCurrentItem(with: newPlayerItem)
+        case 1:
+            reels[0].player.replaceCurrentItem(with: newPlayerItem)
+        case 2:
+            reels[1].player.replaceCurrentItem(with: newPlayerItem)
+        default:
+            break
+        }
+    }
+    
+    public func scrollBack(reelIndex: Int) {
+        let newPlayerItem: AVPlayerItem = getReel()
+        
+        switch (reelIndex) {
+        case 0:
+            reels[1].player.replaceCurrentItem(with: newPlayerItem)
+        case 1:
+            reels[2].player.replaceCurrentItem(with: newPlayerItem)
+        case 2:
+            reels[0].player.replaceCurrentItem(with: newPlayerItem)
+        default:
+            break
+        }
+    }
+    
+    private func isOnboardedRequest(email: String, completion: @escaping ([Int]?, Error?) -> Void) {
         let url = URL(string: baseUrl + "/is_onboarded")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -21,25 +129,87 @@ class UserAuthModel: ObservableObject {
 
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data, error == nil else {
-                completion(nil, error)
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
                 return
             }
             
             do {
                 if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
                    let message = json["message"] as? [Int] {
-                    completion(message, nil)
+                    DispatchQueue.main.async {
+                        completion(message, nil)
+                    }
                 } else {
-                    completion(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"]))
+                    DispatchQueue.main.async {
+                        completion(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"]))
+                    }
                 }
             } catch {
-                completion(nil, error)
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
             }
         }
 
         task.resume()
     }
+    
+    private func onboardRequest(email: String, topicSelection: [Int], completion: @escaping (Bool?, Error?) -> Void) {
+        let url = URL(string: baseUrl + "/onboard")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
+        let body: [String: Any] = ["email": email, "topic_selection": topicSelection]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
+                return
+            }
+            
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                   let message = json["message"] as? String {
+                    DispatchQueue.main.async {
+                        if (message == "success") {
+                            completion(true, nil)
+                        }
+                        
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        completion(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"]))
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
+            }
+        }
+
+        task.resume()
+    }
+    
+    func onboard(topicSelection: [Int]) {
+        onboardRequest(email: self.email, topicSelection: topicSelection) { result, error in
+            if let result, result == true {
+                self.selectedTopics = topicSelection
+                self.getInitialReels(completion: { initialReels, error in
+                        if let initialReels {
+                            self.reels = initialReels
+                        }
+                })
+                self.authState = .loggedIn
+            }
+        }
+    }
     
     init(){
         check()
@@ -53,11 +223,22 @@ class UserAuthModel: ObservableObject {
             let profilePicUrl = user.profile!.imageURL(withDimension: 100)!.absoluteString
             self.givenName = givenName ?? ""
             self.profilePicUrl = profilePicUrl
+            self.email = user.profile?.email ?? ""
             
-            isOnboarded(email: "nand.vinchhi@gmail.com") { isOnboarded, error in
-                print("HELLO WORLD \(isOnboarded)")
+            isOnboardedRequest(email: self.email) { isOnboarded, error in
+                if let isOnboarded, isOnboarded.count > 0 {
+                    self.selectedTopics = isOnboarded
+                    self.getInitialReels(completion: { initialReels, error in
+                        if let initialReels {
+                            self.reels = initialReels
+                        }
+                    })
+                    self.authState = .loggedIn
+                } else {
+                    self.authState = .onboarding
+                }
             }
-            self.authState = .loggedIn
+           
         }else{
             self.authState = .loggedOut
             self.givenName = "Not Logged In"
@@ -70,13 +251,11 @@ class UserAuthModel: ObservableObject {
             if let error = error {
                 self.errorMessage = "error: \(error.localizedDescription)"
             }
-            
             self.checkStatus()
         }
     }
     
     func signIn(){
-        
        guard let presentingViewController = (UIApplication.shared.connectedScenes.first as? UIWindowScene)?.windows.first?.rootViewController else {return}
         GIDSignIn.sharedInstance.signIn(withPresenting: presentingViewController, completion: { user, error in
             if let error = error {
