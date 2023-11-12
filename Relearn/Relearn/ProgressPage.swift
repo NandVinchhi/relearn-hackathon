@@ -28,6 +28,7 @@ extension View {
 }
 
 struct ProgressGraphView: View {
+
     @EnvironmentObject var vm: RequestModel
     @State var likesData {
         return vm.getLikesData()
@@ -177,7 +178,7 @@ struct ProgressPage: View {
                         TopicView(topicName: data.topic,
                                   unitList: data.unitList)
                     }
-                   
+                    
                     
                     RoundedRectangle(cornerRadius: 72)
                         .frame(width: 70, height: 6)

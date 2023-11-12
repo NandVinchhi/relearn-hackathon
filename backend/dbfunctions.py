@@ -44,7 +44,7 @@ def increment_current(reel_id, email):
     response = supabase.table("reels").select("*").filter("number", "eq", reel["number"] + 1).filter("unit_id", "eq", unit_id).limit(1).execute()
     if len(response.data) > 0:
         key = f"current:{email}:{topic_id}"
-        data = json.loads(r.get(key))
+        data = json.loads(r.json().get(key))
         data["reel"] = reel["number"] + 1
         r.json().set(key, Path.root_path(), json.dumps(data))
         return
@@ -215,8 +215,13 @@ def remove_like(reel_id, email):
 
     r.delete(key)
 
-# onboard("nand.vinchhi@gmail.com", [1])
-# print(recommend_initial("nand.vinchhi@gmail.com", [1]))
+# r.flushall()
+# offboard()
+# onboard("nand.vinchhi@gmail.com", [1, 2, 4])
+# print(recommend_initial("nand.vinchhi@gmail.com", [1, 2, 4]))
 # print(r.json().get("current:nand.vinchhi@gmail.com:1"))
-r.flushall()
-offboard()
+# like_reel(5, "nand.vinchhi@gmail.com")
+# print(r.json().get("current:nand.vinchhi@gmail.com:1"))
+
+
+# print(r.json().get("current:nand.vinchhi@gmail.com:4"))
