@@ -110,7 +110,7 @@ struct CommentView: View {
         
         if let reply = comment.reply {
             HStack (alignment: .top) {
-                AsyncImage(url: URL(string: "https://hips.hearstapps.com/hmg-prod/images/gettyimages-615312634.jpg")!) { image in
+                AsyncImage(url: URL(string: "https://images.nightcafe.studio/jobs/KlDxmYiKWjzrv27DYEu7/KlDxmYiKWjzrv27DYEu7--1--pk9qd.jpg")!) { image in
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fit)
@@ -149,7 +149,10 @@ struct CommentView: View {
 
 struct CommentsPage: View {
     
+    var reelId: Int
+    var vm: RequestModel
     @State var inputText: String = ""
+    @FocusState var isFocused: Bool
     
     @State var comments: [Comment] = []
     var body: some View {
@@ -175,11 +178,30 @@ struct CommentsPage: View {
                 .overlay {
                     HStack {
                         Spacer()
-                        Image("sendcomment").resizable()
-                            .frame(width: 28, height: 28)
-                            .padding(.trailing, 10)
+                        
+                        Button (action: {
+                            let newComment: Comment = Comment(id: 0, reelId: reelId, senderName: vm.givenName, senderProfile: URL(string: vm.profilePicUrl)!, sentAt: Date(), comment: inputText)
+                            
+                            comments.append(newComment)
+                            
+                            let finalInputText = inputText
+                            inputText = ""
+                            
+                            vm.addCommentRequest(reel_id: String(reelId), comment: finalInputText) { edisonReply, error in
+                                
+                                comments[comments.count - 1].reply = edisonReply
+                            }
+                            
+                            isFocused = false
+                        }){
+                            Image("sendcomment").resizable()
+                                .frame(width: 28, height: 28)
+                                .padding(.trailing, 10)
+                        }
+                        
                     }
                 }
+                .focused($isFocused)
                 .background{
                     ZStack {
                         RoundedRectangle(cornerRadius: 100)
@@ -202,17 +224,17 @@ struct CommentsPage: View {
         }
         .padding(.horizontal, 10).padding(.bottom, 8)
         .onAppear {
-            let newComment1: Comment = Comment(id: 0, reelId: 0, senderName: "Nand Vinchhi", senderProfile: URL(string: "https://www.hackingwithswift.com/samples/paul.jpg")!, sentAt: Date.now, comment: "Is the mitochondria the powerhouse of the cell?")
             
-            comments.append(newComment1)
+            vm.getCommentsRequest(reel_id: String(reelId)) { newComments, error in
+                if let newComments {
+                    comments = newComments
+                }
+            }
             
-            let newComment2: Comment = Comment(id: 0, reelId: 0, senderName: "Advay Choudhury", senderProfile: URL(string: "https://www.hackingwithswift.com/samples/paul.jpg")!, sentAt: Date.now, comment: "What is the capital of India?", reply: "Hello! The capital of India is New Delhi.")
-            
-            comments.append(newComment2)
         }
     }
 }
 
-#Preview {
-    CommentsPage()
-}
+//#Preview {
+//    CommentsPage()
+//}

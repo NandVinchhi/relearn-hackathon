@@ -2,6 +2,25 @@ import SwiftUI
 import GoogleSignIn
 import AVKit
 
+import Foundation
+
+func dateToString(date: Date) -> String {
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss" // You can adjust the format as needed
+    return dateFormatter.string(from: date)
+}
+
+func stringToDate(string: String) -> Date {
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss" // This format should match the one used in dateToString
+    if let final = dateFormatter.date(from: string) {
+        return final
+    } else {
+        return Date()
+    }
+}
+
+
 class RequestModel: ObservableObject {
     
     @Published var givenName: String = ""
@@ -187,6 +206,112 @@ class RequestModel: ObservableObject {
                         completion(self.convertDictToReel(data: message), nil)
                     }
                 } else {
+                    DispatchQueue.main.async {
+                        completion(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"]))
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
+            }
+        }
+
+        task.resume()
+    }
+    private func convertDictToComment(data: [String: Any]) -> Comment {
+        return Comment(
+            id: data["id"] as? Int ?? 0,
+            reelId: data["reel_id"] as? Int ?? 0,
+            senderName: data["name"] as? String ?? "",
+            senderProfile: URL(string: data["profile"] as? String ?? "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png")!,
+            sentAt: stringToDate(string: data["created_at"] as? String ?? ""),
+            comment: data["content"] as? String ?? "",
+            reply:  data["edison_reply"] as? String ?? nil
+        )
+    }
+    
+    private func convertDictArrayToComment(data: [[String: Any]?]) -> [Comment] {
+        var finalReel: [Comment] = []
+        
+        for i in 1...data.count {
+            if let newData = data[i - 1] {
+                finalReel.append(convertDictToComment(data: newData))
+            }
+        }
+
+        return finalReel
+    }
+    
+    func getCommentsRequest(reel_id: String, completion: @escaping ([Comment]?, Error?) -> Void) {
+        let url = URL(string: baseUrl + "/get_comments")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = ["reel_id": reel_id]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
+                return
+            }
+            
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                    
+                    if let message = json["message"] as? [[String: Any]?] {
+                        DispatchQueue.main.async {
+                            
+                            completion(self.convertDictArrayToComment(data: message), nil)
+                        }
+                    }
+                } else {
+                    
+                    DispatchQueue.main.async {
+                        completion(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"]))
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
+            }
+        }
+
+        task.resume()
+    }
+    
+    func addCommentRequest(reel_id: String, comment: String, completion: @escaping (String?, Error?) -> Void) {
+        let url = URL(string: baseUrl + "/add_comment_with_edison")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = ["reel_id": reel_id, "email": self.email, "name": self.givenName, "profile_url": self.profilePicUrl, "created_at": dateToString(date: Date()), "comment": comment]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
+                return
+            }
+            
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                    
+                    if let message = json["message"] as? [String: Any] {
+                        DispatchQueue.main.async {
+                            completion(message["edison_reply"] as? String ?? nil, nil)
+                        }
+                    }
+                } else {
+                    
                     DispatchQueue.main.async {
                         completion(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"]))
                     }

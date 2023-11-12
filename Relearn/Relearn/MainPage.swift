@@ -102,21 +102,26 @@ struct ReelView: View {
                                
                                Button(action: {
                                    if (currentReel.topic != "") {
-                                       currentReel.player.pause()
-                                       isPlaying = false
+                                       if (isPlaying) {
+                                           currentReel.player.pause()
+                                           isPlaying = false
+                                       }
+                                       
                                        showingComments = true
                                    }
                                    
                                }) {
                                    ReelPageButton(assetName: "commentbutton", height: 36)
                                }.halfSheet(isPresented: $showingComments) {
-                                   CommentsPage()
+                                   CommentsPage(reelId: currentReel.reelId, vm:vm)
                                }
                                
                                
                                Button(action: {
-                                   currentReel.player.pause()
-                                   isPlaying = false
+                                   if (isPlaying) {
+                                       currentReel.player.pause()
+                                       isPlaying = false
+                                   }
                                    self.showingShareSheet = true
                                }) {
                                    ReelPageButton(assetName: "sharebutton", height: 36)
@@ -133,8 +138,10 @@ struct ReelView: View {
                                }
                                
                                Button(action: {
-                                   currentReel.player.pause()
-                                   isPlaying = false
+                                   if (isPlaying) {
+                                       currentReel.player.pause()
+                                       isPlaying = false
+                                   }
                                    showingProgress = true
                                }) {
                                    ReelPageButton(assetName: "progressbutton", height: 36)
