@@ -8,6 +8,38 @@ class UserAuthModel: ObservableObject {
     @Published var authState: AuthState = .loading
     @Published var errorMessage: String = ""
     
+    private let baseUrl: String = "http://ec2-3-88-232-170.compute-1.amazonaws.com"
+    
+    private func isOnboarded(email: String, completion: @escaping ([Int]?, Error?) -> Void) {
+        let url = URL(string: baseUrl + "/is_onboarded")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = ["email": email]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                completion(nil, error)
+                return
+            }
+            
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                   let message = json["message"] as? [Int] {
+                    completion(message, nil)
+                } else {
+                    completion(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"]))
+                }
+            } catch {
+                completion(nil, error)
+            }
+        }
+
+        task.resume()
+    }
+
     
     init(){
         check()
@@ -21,6 +53,10 @@ class UserAuthModel: ObservableObject {
             let profilePicUrl = user.profile!.imageURL(withDimension: 100)!.absoluteString
             self.givenName = givenName ?? ""
             self.profilePicUrl = profilePicUrl
+            
+            isOnboarded(email: "nand.vinchhi@gmail.com") { isOnboarded, error in
+                print("HELLO WORLD \(isOnboarded)")
+            }
             self.authState = .loggedIn
         }else{
             self.authState = .loggedOut

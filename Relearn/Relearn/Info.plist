@@ -26,6 +26,19 @@
 		</dict>
 	</array>
 	<key>NSAppTransportSecurity</key>
-	<dict/>
+    <dict>
+        <key>NSExceptionDomains</key>
+        <dict>
+            <key>ec2-3-88-232-170.compute-1.amazonaws.com</key>
+            <dict>
+                <key>NSExceptionAllowsInsecureHTTPLoads</key>
+                <true/>
+                <key>NSIncludesSubdomains</key>
+                <true/>
+                <!-- Add other keys as needed -->
+            </dict>
+            <!-- Add other domains as needed -->
+        </dict>
+    </dict>
 </dict>
 </plist>

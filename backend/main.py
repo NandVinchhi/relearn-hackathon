@@ -14,9 +14,9 @@ app.add_middleware(
 )
 
 @app.post("/is_onboarded")
-async def api_is_onboarded(email: str):
+async def api_is_onboarded(body: dict):
     try:
-        return {"message": dbfunctions.is_onboarded(email)}
+        return {"message": dbfunctions.is_onboarded(body["email"])}
     except Exception as e:
         print(repr(e))
         raise HTTPException(status_code=500, detail="Server error")
@@ -103,9 +103,9 @@ async def api_like_reel(reel_id: int, email: str):
         raise HTTPException(status_code=500, detail="Server error")
     
 @app.post("/remove_like")
-async def api_remove_like(reel_id: int, email: str):
+async def api_remove_like(body: dict):
     try:
-        dbfunctions.remove_like(reel_id, email)
+        dbfunctions.remove_like(body["reel_id"], body["email"])
         return {"message": "success"}
     except Exception as e:
         print(repr(e))
