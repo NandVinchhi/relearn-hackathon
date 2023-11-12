@@ -2,7 +2,7 @@ import SwiftUI
 import Charts
 
 extension View {
-    func fadeOutTop(fadeLength:CGFloat=50) -> some View {
+    func fadeOutTop(fadeLength:CGFloat=20) -> some View {
         return mask(
             VStack(spacing: 0) {
 
@@ -205,7 +205,7 @@ struct ProgressPage: View {
                     
                 }.padding(.trailing, 5)
                 .padding(.bottom, 24)
-            }.fadeOutTop(fadeLength: 30)
+            }.fadeOutTop(fadeLength: 10)
             Spacer()
         }
     }
