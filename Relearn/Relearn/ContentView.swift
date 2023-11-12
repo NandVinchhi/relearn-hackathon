@@ -2,7 +2,7 @@ import SwiftUI
 import Supabase
 
 struct ContentView: View {
-    @EnvironmentObject var vm: UserAuthModel
+    @EnvironmentObject var vm: RequestModel
     
     var body: some View {
         VStack {

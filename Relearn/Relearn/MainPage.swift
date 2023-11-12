@@ -25,7 +25,7 @@ struct ReelView: View {
     @State private var showingComments = false
     
     @State private var showingProgress = false
-    @EnvironmentObject var vm: UserAuthModel
+    @EnvironmentObject var vm: RequestModel
     
     var body: some View {
        
@@ -87,7 +87,10 @@ struct ReelView: View {
                                }
                                
                                Button(action: {
-                                   showingComments = true
+                                   if (currentReel.topic != "") {
+                                       showingComments = true
+                                   }
+                                   
                                }) {
                                    ReelPageButton(assetName: "commentbutton", height: 36)
                                }.halfSheet(isPresented: $showingComments) {
@@ -140,7 +143,7 @@ struct ReelView: View {
 }
 
 struct MainPage: View {
-    @EnvironmentObject var vm: UserAuthModel
+    @EnvironmentObject var vm: RequestModel
     
     @State var currentTab: UUID = UUID()
     var body: some View {

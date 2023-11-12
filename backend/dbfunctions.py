@@ -215,7 +215,9 @@ def remove_like(reel_id, email):
 
     r.delete(key)
 
+
+
 # r.flushall()
 # onboard("nand.vinchhi@gmail.com", [1])
-# print(recommend_initial("nand.vinchhi@gmail.com", [1]))
+print(recommend_initial("nand.vinchhi@gmail.com", [1]))
 # offboard()

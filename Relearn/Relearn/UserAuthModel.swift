@@ -2,7 +2,7 @@ import SwiftUI
 import GoogleSignIn
 import AVKit
 
-class UserAuthModel: ObservableObject {
+class RequestModel: ObservableObject {
     
     @Published var givenName: String = ""
     @Published var profilePicUrl: String = ""
@@ -115,10 +115,58 @@ class UserAuthModel: ObservableObject {
         task.resume()
     }
     
+    private func getMemeReelRequest(completion: @escaping (Reel?, Error?) -> Void) {
+        let url = URL(string: baseUrl + "/get_meme_reel")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = ["email": email]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
+                return
+            }
+            
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                   let message = json["message"] as? [String: Any] {
+                    DispatchQueue.main.async {
+                        completion(self.convertDictToReel(data: message), nil)
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        completion(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"]))
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
+            }
+        }
+
+        task.resume()
+    }
+    
     public func scrollForward() {
-        getReelRequest() { reel, error in
-            if let reel {
-                self.reels.append(reel)
+        let randomNum: Int = Int.random(in: 1...5)
+        
+        if (randomNum != 1) {
+            getReelRequest() { reel, error in
+                if let reel {
+                    self.reels.append(reel)
+                }
+            }
+        } else {
+            getMemeReelRequest() { reel, error in
+                if let reel {
+                    self.reels.append(reel)
+                }
             }
         }
         

@@ -36,7 +36,7 @@ struct TopicSelect: View {
 
 struct OnboardingPage: View {
     @State var selectedTopics: [Int] = []
-    @EnvironmentObject var vm: UserAuthModel
+    @EnvironmentObject var vm: RequestModel
     
     var body: some View {
         Text("What would you like to relearn?")

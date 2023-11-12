@@ -3,7 +3,7 @@ import Supabase
 
 struct LoginPage: View {
     
-    @EnvironmentObject var vm: UserAuthModel
+    @EnvironmentObject var vm: RequestModel
    
     var body: some View {
         Image("logo")
