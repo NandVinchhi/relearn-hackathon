@@ -76,16 +76,6 @@ func timeAgoShortFormat(from date: Date) -> String {
     }
 }
 
-struct Comment: Identifiable, Hashable {
-    var id: Int
-    var reelId: Int
-    var senderName: String
-    var senderProfile: URL
-    var sentAt: Date
-    var comment: String
-    var reply: String?
-}
-
 struct CommentView: View {
     
     var comment: Comment

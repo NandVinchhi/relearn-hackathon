@@ -35,7 +35,15 @@ struct ReelView: View {
                Task {
                    if (currentReel.id == newValue) {
                        currentReel.player.play()
-                       isLiked = false
+                       
+                       vm.getLikedRequest(reel_id: String(currentReel.reelId) ) { status, error in
+                           if let status, status == true {
+                               isLiked = true
+                           } else {
+                               isLiked = false
+                           }
+                       }
+                       
                        showingShareSheet = false
                        showingComments = false
                        isPlaying = true
@@ -81,13 +89,21 @@ struct ReelView: View {
                            Spacer()
                            VStack (spacing: 30) {
                                Button(action: {
-                                   isLiked = !isLiked
+                                   if (currentReel.topic != "") {
+                                       isLiked = !isLiked
+                                       vm.likeReelRequest(reel_id: String(currentReel.reelId) ) { status, error in
+                                           print("LIKE BUTTON PRESSED \(status)")
+                                       }
+                                   }
+                                   
                                }) {
                                    ReelPageButton(assetName: "likebutton", height: 36, foregroundColor: isLiked ? Color.light : Color.white)
                                }
                                
                                Button(action: {
                                    if (currentReel.topic != "") {
+                                       currentReel.player.pause()
+                                       isPlaying = false
                                        showingComments = true
                                    }
                                    
@@ -99,7 +115,9 @@ struct ReelView: View {
                                
                                
                                Button(action: {
-                                           self.showingShareSheet = true
+                                   currentReel.player.pause()
+                                   isPlaying = false
+                                   self.showingShareSheet = true
                                }) {
                                    ReelPageButton(assetName: "sharebutton", height: 36)
                                }
@@ -115,7 +133,9 @@ struct ReelView: View {
                                }
                                
                                Button(action: {
-                                   showingProgress = true;
+                                   currentReel.player.pause()
+                                   isPlaying = false
+                                   showingProgress = true
                                }) {
                                    ReelPageButton(assetName: "progressbutton", height: 36)
                                }.fullScreenCover(isPresented: $showingProgress) {

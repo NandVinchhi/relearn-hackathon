@@ -39,6 +39,87 @@ class RequestModel: ObservableObject {
         return finalReel
     }
     
+    func getLikedRequest(reel_id: String, completion: @escaping (Bool?, Error?) -> Void) {
+        let url = URL(string: baseUrl + "/is_liked")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = ["email": email, "reel_id": reel_id]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
+                return
+            }
+            
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                   let message = json["message"] as? Bool {
+                    DispatchQueue.main.async {
+                        completion(message, nil)
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        completion(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"]))
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
+            }
+        }
+
+        task.resume()
+    }
+    
+    func likeReelRequest(reel_id: String, completion: @escaping (Bool?, Error?) -> Void) {
+        let url = URL(string: baseUrl + "/like_reel")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = ["email": email, "reel_id": reel_id]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
+                return
+            }
+            
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                   let message = json["message"] as? String {
+                    DispatchQueue.main.async {
+                        if (message == "success") {
+                            completion(true, nil)
+                        } else {
+                            completion(false, nil)
+                        }
+                        
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        completion(nil, NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"]))
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
+            }
+        }
+
+        task.resume()
+    }
+    
     private func getInitialReels(completion: @escaping ([Reel]?, Error?) -> Void) {
         let url = URL(string: baseUrl + "/recommend_initial")!
         var request = URLRequest(url: url)
@@ -56,15 +137,13 @@ class RequestModel: ObservableObject {
                 return
             }
             
-            
-            
             do {
                 
                 if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    print("hello world \(json) \(self.selectedTopics)")
+                    
                     if let message = json["message"] as? [[String: Any]?] {
                         DispatchQueue.main.async {
-                            print("HELLO WORLD \(message)")
+                            
                             completion(self.convertDictArrayToReel(data: message), nil)
                         }
                     }

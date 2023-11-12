@@ -5,6 +5,16 @@ enum AuthState {
     case loading, loggedOut, onboarding, loggedIn
 }
 
+struct Comment: Identifiable, Hashable {
+    var id: Int
+    var reelId: Int
+    var senderName: String
+    var senderProfile: URL
+    var sentAt: Date
+    var comment: String
+    var reply: String?
+}
+
 struct Reel: Equatable, Hashable, Identifiable {
     let id: UUID
     var player: AVPlayer
