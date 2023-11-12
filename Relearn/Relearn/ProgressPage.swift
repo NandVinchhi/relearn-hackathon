@@ -38,6 +38,10 @@ struct ProgressGraphView: View {
         LikeData(date: Date().addingTimeInterval(6 * 86400), likes: 30),
         LikeData(date: Date().addingTimeInterval(7 * 86400), likes: 45),
     ]
+//    @EnvironmentObject var vm: RequestModel
+//    @State var likesData {
+//        return vm.getLikesData()
+//    }
     
     var body: some View {
         ZStack {
@@ -179,24 +183,20 @@ struct ProgressPage: View {
                     ProgressGraphView()
                         .padding(.top, 12)
                     
-                    TopicView(topicName: "AP Human Geography",
+                    TopicView(topicName: "AP BIOLOGY",
                               unitList: [
-                                UnitType(text: "Thinking Geographically",number: 67),
-                                UnitType(text: "Human Systems and Processes", number: 50)])
+                                UnitType(text: "Chemistry of Life",number: 14),
+                                UnitType(text: "Cell Structure and Function", number: 0)])
                     
-                    TopicView(topicName: "AP Calculus AB",
+                    TopicView(topicName: "AP Chemistry",
                               unitList: [
-                                UnitType(text: "Limits and Derivatives", number: 70),
-                                UnitType(text: "Application of Derivatives", number: 100)])
-                    
-                    TopicView(topicName: "AP Calculus BC",
-                              unitList: [
-                                UnitType(text: "Introduction to Integrals", number: 70),
-                                UnitType(text: "Application of Integrals", number: 100)])
+                                UnitType(text: "Atomic Structure and Properties", number: 12),
+                                UnitType(text: "Molecular and Ionic Compounds", number: 0)])
                     
                     TopicView(topicName: "AP US History",
                               unitList: [
-                                UnitType(text: "Independence", number: 70)])
+                                UnitType(text: "Period 1", number: 4),
+                                UnitType(text: "Period 2", number: 0)])
                     
                     RoundedRectangle(cornerRadius: 72)
                         .frame(width: 70, height: 6)
